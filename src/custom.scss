@@ -1,0 +1,66 @@
+html, body {
+    height: 100%;
+}
+  
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+$color-ci-primary: #0023F1;
+
+// Custom bootstrap theme
+$font-size-base: 0.95rem !default;
+$font-family-sans-serif: 'Open Sans', sans-serif;
+
+$navbar-padding-y: 0;
+$navbar-padding-x: 0;
+$navbar-brand-padding-y: 0;
+
+$card-spacer-x: 0 !default;
+$list-group-item-padding-x: 0.5rem !default;
+
+$enable-rounded: false;
+
+// Colors
+$gray-100: #F5F6FA;
+$gray-300: #E8E8E8;
+$gray-600: #9F9F9F;
+$gray-900: #505050;
+
+$dark: #1B2E47;
+
+$box-shadow: 0 .5rem .6rem rgba(#000, .16) !default;
+
+$theme-colors: (
+"primary": $color-ci-primary
+);
+  
+// Import Bootstrap and its default variables
+@import '~bootstrap/scss/bootstrap.scss';
+
+.min-100 {
+  min-height: 100%;
+}
+
+.overflow-scroll {
+  overflow: scroll;
+}
+
+.smaller {
+  font-size: .9rem;
+}
+
+a.link-action {
+  color: $gray-900;
+  text-decoration: none;
+
+  span { 
+    font-size: 1.2rem;
+  }
+}
+
+a.link-action:hover svg {
+  color: $color-ci-primary;
+}
+
+a.link-action:hover span {
+  border-bottom: 1px solid $color-ci-primary;
+}
