@@ -32,7 +32,9 @@ $box-shadow: 0 .5rem .6rem rgba(#000, .16) !default;
 $theme-colors: (
 "primary": $color-ci-primary
 );
-  
+
+$enable-responsive-font-sizes: true;
+
 // Import Bootstrap and its default variables
 @import '~bootstrap/scss/bootstrap.scss';
 
