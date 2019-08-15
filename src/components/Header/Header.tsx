@@ -9,6 +9,7 @@ import {
   DropdownToggle,
   DropdownMenu,
   DropdownItem } from 'reactstrap';
+import { Link } from 'react-router-dom';
 import Logo from './blockninjas-logo.svg';
 
 type Props = {
@@ -37,7 +38,7 @@ export class Header extends React.Component<Props, State> {
   render(): JSX.Element {
     return (
       <Navbar color="dark" dark expand="md" className="pr-3 sticky-top flex-shrink-0">
-        <NavbarBrand href="/">
+        <NavbarBrand tag={Link} to="/">
           <img src={Logo} width="64" alt="blockninjas" />
           <span className="ml-2 d-none">blockninjas</span>
         </NavbarBrand>
