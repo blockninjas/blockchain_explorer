@@ -2,11 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as serviceWorker from './serviceWorker';
 import { ApolloProvider } from '@apollo/react-hooks';
-import ApolloClient, { InMemoryCache, gql } from 'apollo-boost';
+import ApolloClient, { InMemoryCache, gql, NormalizedCacheObject } from 'apollo-boost';
+import { persistCache } from 'apollo-cache-persist';
+import { PersistentStorage, PersistedData } from 'apollo-cache-persist/types';
 import './custom.scss';
 import { Router } from './Router';
-
-const cache = new InMemoryCache();
 
 type Space = {
   id: number,
@@ -15,6 +15,7 @@ type Space = {
   isBookmark: boolean
 };
 
+const cache = new InMemoryCache();
 const client = new ApolloClient({
   uri: 'http://localhost:4000/api/graphql',
   cache: cache,
@@ -89,7 +90,16 @@ const initialCacheData = {
   }
 }
 
-ReactDOM.render(<ApolloProvider client={client}><Router /></ApolloProvider>, document.getElementById('root'));
+const setupAndRender = async () => {
+  // await before instantiating ApolloClient, else queries might run before the cache is persisted
+  await persistCache({
+    cache: cache,
+    storage: window.localStorage as PersistentStorage<PersistedData<NormalizedCacheObject>>
+  });
+  ReactDOM.render(<ApolloProvider client={client}><Router /></ApolloProvider>, document.getElementById('root'));
+}
+
+setupAndRender();
 
 cache.writeData(initialCacheData);
 client.onResetStore(async () => cache.writeData(initialCacheData));
