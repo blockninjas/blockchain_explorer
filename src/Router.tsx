@@ -1,8 +1,8 @@
 import React from 'react';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 import { App } from './App';
-import { Space } from './containers/Spaces/Space';
 import { Dashboard } from './containers/Dashboard';
+import { Space, NewSpace } from './containers/Spaces';
 
 export const Router = () => (
   <BrowserRouter>
@@ -11,6 +11,7 @@ export const Router = () => (
       <Route exact path='/' component={Dashboard} />
       <Route path='/spaces'>
         <Switch>
+          <Route path='/spaces/new' component={NewSpace} />
           <Route path='/spaces/:id' component={Space} />
         </Switch>
       </Route>

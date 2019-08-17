@@ -1,16 +1,77 @@
-import React from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Container, Row, Col } from 'reactstrap';
+import gql from 'graphql-tag';
+import { useQuery } from '@apollo/react-hooks';
 import { Sidebar, Detail } from '../../components/Space';
 import { ModalAddItem } from '../../components/Space/Modals';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
 
-type Props = {
-  // no-op
+type RouteProps = {
+  id: string
 }
 
-type State = {
-  isModalAddItemOpen: boolean
+const GET_SPACE = gql`
+  query getSpace($spaceId: Int!) {
+    space(id: $spaceId) @client {
+      name
+      createdAt
+      isBookmark
+    }
+  }
+`;
+
+const GET_ADDRESS = gql`
+  {
+    address(base58check: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa") {
+      base58check
+      tags {
+        title
+        category
+        priority
+      } 
+    }
+  }
+`;
+
+const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) => {
+  const [isModalAddItemOpen, toggleAddItemModal] = useState(false);
+
+  const { loading, error, data } = useQuery(GET_SPACE, { variables: { spaceId: match.params.id }});
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: ${error}</div>;
+
+  /* const { loading, error, data } = useQuery(GET_ADDRESS);
+  if (loading) console.log('loading');
+  if (error) console.log(`error ${error.message}`);
+
+  console.log(data);*/
+
+  return (
+    <>
+      <Container fluid className="p-0 d-flex flex-column flex-grow-1">
+        <Row noGutters className="flex-grow-1 bg-light">
+          <Col className="bg-white shadow" lg="2">
+            <Sidebar searchPlaceholder="Search Cluster" btnText="Add Item" onBtnClick={() => toggleAddItemModal(!isModalAddItemOpen)} />
+          </Col>
+
+          <Col style={{overflow: 'hidden'}}>
+            {data.space.name}
+          </Col>
+
+          {/*this.renderDetail(null)*/}
+        </Row>
+      </Container>
+
+      <ModalAddItem 
+          isOpen={isModalAddItemOpen} 
+          toggle={() => toggleAddItemModal(!isModalAddItemOpen)} 
+          onAddItem={() => console.log('yo')/*this.onAddItem*/} />
+    </>);
 }
 
+export default withRouter(Space);
+
+/*
 export class Space extends React.Component<Props, State> {
   state: Readonly<State> = {
     isModalAddItemOpen: false
@@ -24,10 +85,24 @@ export class Space extends React.Component<Props, State> {
 
   onAddItem(base58check: string) {
     console.log("Adding address", base58check);
+    
+    const { loading, error, data } = useQuery(GET_ADDRESS);
+
+    if (loading) return console.log('loading');
+    if (error) return console.log(`error ${error.message}`);
+
+    console.log(data.address);
   }
 
   render(): JSX.Element {
     const { isModalAddItemOpen } = this.state;
+
+    const { loading, error, data } = useQuery(GET_ADDRESS);
+
+    if (loading) console.log('loading');
+    if (error) console.log(`error ${error.message}`);
+
+    console.log(data.address);
 
     return (
       <>
@@ -50,7 +125,7 @@ export class Space extends React.Component<Props, State> {
                     />
                   )}
                 </ApolloConsumer>
-              </div>*/}
+              </div>*}
             </Col>
 
             {this.renderDetail(null)}
@@ -58,7 +133,7 @@ export class Space extends React.Component<Props, State> {
 
           {/*<ApolloConsumer>
             {client => (<ModalAddItem isOpen={false} toggle={() => console.log('toggle')} onAddItem={(base58check: string) => console.log(base58check)} />)}
-          </ApolloConsumer>*/}
+          </ApolloConsumer>*}
         </Container>
 
         <ModalAddItem 
@@ -86,4 +161,4 @@ export class Space extends React.Component<Props, State> {
       </Col>
     )
   }
-}
+}*/
