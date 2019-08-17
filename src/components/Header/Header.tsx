@@ -1,4 +1,5 @@
-import * as React from 'react';
+import React, { FunctionComponent, useState } from 'react';
+import { useApolloClient } from '@apollo/react-hooks';
 import {
   Collapse,
   Navbar,
@@ -11,10 +12,10 @@ import {
   DropdownItem } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import Logo from './blockninjas-logo.svg';
-import { FunctionComponent, useState } from 'react';
 
 const Header: FunctionComponent = () => {
   const [isOpen, toggle] = useState(false);
+  const apolloClient = useApolloClient();
 
   return (
     <Navbar color="dark" dark expand="md" className="pr-3 sticky-top flex-shrink-0">
@@ -31,11 +32,8 @@ const Header: FunctionComponent = () => {
               <img src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mm" alt="Avatar" height="45" className="rounded-circle ml-3 border border-white" />
             </DropdownToggle>
             <DropdownMenu right>
-              <DropdownItem>
-                Option 1
-              </DropdownItem>
-              <DropdownItem>
-                Option 2
+              <DropdownItem onClick={() => apolloClient.resetStore()}>
+                Reset current session
               </DropdownItem>
               <DropdownItem divider />
               <DropdownItem>
