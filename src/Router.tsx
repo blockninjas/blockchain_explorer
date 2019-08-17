@@ -1,8 +1,8 @@
 import React from 'react';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 import { App } from './App';
-import { Dashboard } from './containers/Dashboard/Dashboard';
 import { Space } from './containers/Spaces/Space';
+import { Dashboard } from './containers/Dashboard';
 
 export const Router = () => (
   <BrowserRouter>

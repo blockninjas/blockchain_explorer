@@ -1,67 +1,39 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Container, Row, Col } from 'reactstrap';
 import { NavLink } from 'react-router-dom';
 import { faPlus, faFile, faStar } from '@fortawesome/free-solid-svg-icons';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import gql from 'graphql-tag';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { CardWithListGroup } from '../../components/Card';
 
-type Props = {
-  // no-op
-}
+const GET_ALL_SPACES = gql`
+  {
+    spaces @client {
+      id
+      name
+      createdAt
+      isBookmark
+    }
+  }
+`;
 
-type State = {
-  // no-op
-}
+const Dashboard: FunctionComponent = () => {
+  const { loading, error, data } = useQuery(GET_ALL_SPACES);
+  
+  if (loading) return <div>Loading</div>;
+  if (error) console.log(`error ${error.message}`);
 
-export class Dashboard extends React.Component<Props, State> {
-  render(): JSX.Element {
-    const lastOpenendEntries = [
-      {
-        to: '/spaces/A4144',
-        name: 'Akt A4144',
-        subheader: 'Today, 12:30',
-        icon: <FontAwesomeIcon icon={faFile} size="lg" fixedWidth />,
-        iconSecondary: <FontAwesomeIcon icon={faStar} size="lg" className="text-muted" fixedWidth />
-      },
-      {
-        to: '/spaces/AB132',
-        name: 'Akt AB132',
-        subheader: 'Today, 11:10',
-        icon: <FontAwesomeIcon icon={faFile} size="lg" fixedWidth />,
-        iconSecondary: <FontAwesomeIcon icon={farStar} size="lg" className="text-muted" fixedWidth />
-      },
-      {
-        to: '/spaces/EX333',
-        name: 'Akt EX333',
-        subheader: 'Yesterday, 14:23',
-        icon: <FontAwesomeIcon icon={faFile} size="lg" fixedWidth />,
-        iconSecondary: <FontAwesomeIcon icon={farStar} size="lg" className="text-muted" fixedWidth />
-      }
-    ];
+  const spacesAll: any = data.spaces;
+  const spacesBookmarked: any = spacesAll.filter((space: any) => space.isBookmark);
 
-    const bookmarkEntries = [
-      {
-        to: '/spaces/A4144',
-        name: 'Akt A4144',
-        subheader: 'Today, 12:30',
-        icon: <FontAwesomeIcon icon={faFile} size="lg" fixedWidth />,
-        iconSecondary: <FontAwesomeIcon icon={faStar} size="lg" className="text-muted" fixedWidth />
-      },
-      {
-        to: '/spaces/AB132',
-        name: 'Akt AB132',
-        subheader: 'Today, 11:10',
-        icon: <FontAwesomeIcon icon={faFile} size="lg" fixedWidth />,
-        iconSecondary: <FontAwesomeIcon icon={faStar} size="lg" className="text-muted" fixedWidth />
-      }
-    ];
-
-    return (
+  return (
+    <>
       <Container fluid className="p-4 p-md-5">
         <Row>
           <Col>
-            <NavLink to="/spaces" className="d-flex align-items-center link-action">
+            <NavLink to="/spaces/new" className="d-flex align-items-center link-action">
               <FontAwesomeIcon icon={faPlus} size="2x" />
               <span className="ml-4">Start new workspace</span>
             </NavLink>
@@ -70,14 +42,48 @@ export class Dashboard extends React.Component<Props, State> {
 
         <Row className="mt-5">
           <Col lg="4">
-            <CardWithListGroup headerText="Last Opened" entries={lastOpenendEntries} />
+            <SpacesList header="Recent" spaces={spacesAll} />
           </Col>
 
           <Col lg="4">
-            <CardWithListGroup headerText="Bookmarks" entries={bookmarkEntries} />
+            <SpacesList header="Bookmarks" spaces={spacesBookmarked} />
           </Col>
         </Row>
       </Container>
-    )
+    </>
+  );
+}
+export default Dashboard;
+
+type SpacesListProps = {
+  header: string,
+  spaces: any
+};
+
+const TOGGLE_SPACE_BOOKMARK = gql`
+  mutation ToggleSpaceBookmark($id: Int!) {
+    toggleSpaceBookmark(id: $id) @client
   }
+`;
+
+const SpacesList: FunctionComponent<SpacesListProps> = ({header, spaces}) => {
+  const [toggleSpaceBookmark] = useMutation(TOGGLE_SPACE_BOOKMARK);
+
+  const entries = spaces.map((space: any) => (
+    { 
+      to: `/spaces/${space.id}`, 
+      name: space.name,
+      subheader: space.createdAt,
+      icon: <FontAwesomeIcon icon={faFile} size="lg" fixedWidth />,
+      iconSecondary: <div className="py-3" 
+        onClick={(e) => { e.preventDefault(); toggleSpaceBookmark({ variables: { id: space.id}})}}>
+        {space.isBookmark 
+          ? <FontAwesomeIcon icon={faStar} size="lg" className="text-muted" fixedWidth /> 
+          : <FontAwesomeIcon icon={farStar} size="lg" className="text-muted" fixedWidth />
+        }
+        </div>
+    }
+  ));
+  
+  return <CardWithListGroup headerText={header} entries={entries} />;
 }
