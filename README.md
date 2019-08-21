@@ -1,3 +1,9 @@
+# Blockchain Explorer
+
+The `blockchain_explorer` provides a web-based user-interface for querying blockchain data exposed with our [blockchain_api](https://github.com/blockninjas/blockchain_api).
+
+# Notes on ReactJS
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
