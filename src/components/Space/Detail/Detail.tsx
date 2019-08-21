@@ -35,9 +35,11 @@ export const Detail = ({ name, balance, receivedCount, sentCount }: Props) => (
       </div>
     </DetailEntry>
 
-    <DetailEntry header="NOTES">
+    {
+    /*<DetailEntry header="NOTES">
       <div className="mt-3 font-weight-bold border-bottom">Add Note</div>
-    </DetailEntry>
+    </DetailEntry>*/
+    }
   </>
 );
 
