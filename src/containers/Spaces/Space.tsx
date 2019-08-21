@@ -1,10 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Container, Row, Col } from 'reactstrap';
+import { Container, Row, Col, Alert } from 'reactstrap';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import { Sidebar, Detail } from '../../components/Space';
 import { ModalAddItem } from '../../components/Space/Modals';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
+import Graph from './Graph';
 
 type RouteProps = {
   id: string
@@ -13,38 +14,55 @@ type RouteProps = {
 const GET_SPACE = gql`
   query getSpace($spaceId: Int!) {
     space(id: $spaceId) @client {
+      id
       name
       createdAt
       isBookmark
+      nodeAddresses @client {
+        base58check
+        spaceId
+      }
     }
   }
 `;
 
 const GET_ADDRESS = gql`
-  {
-    address(base58check: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa") {
+  query getAddress($base58check: String!) {
+    address(base58check: $base58check) {
       base58check
+      incoming {
+        value
+      }
+      outgoing {
+        value
+      }
       tags {
         title
         category
         priority
       } 
+      cluster {
+        tags {
+          title
+          category
+          priority
+        }
+      }
     }
   }
 `;
 
 const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) => {
+  const currentSpaceId = match.params.id;
   const [isModalAddItemOpen, toggleAddItemModal] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState();
+  const [addresses, setAddresses] = useState(Array<String>());
 
-  const { loading, error, data } = useQuery(GET_SPACE, { variables: { spaceId: match.params.id }});
+  const { loading, error, data } = useQuery(GET_SPACE, { variables: { spaceId: currentSpaceId }});
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: ${error}</div>;
 
-  /* const { loading, error, data } = useQuery(GET_ADDRESS);
-  if (loading) console.log('loading');
-  if (error) console.log(`error ${error.message}`);
-
-  console.log(data);*/
+  console.log("Current Space", data.space);
 
   return (
     <>
@@ -55,110 +73,51 @@ const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) =>
           </Col>
 
           <Col style={{overflow: 'hidden'}}>
-            {data.space.name}
+            <Graph addresses={addresses} />
           </Col>
 
-          {/*this.renderDetail(null)*/}
+          {selectedAddress && <NodeDetail base58check={selectedAddress} />}
         </Row>
       </Container>
 
       <ModalAddItem 
           isOpen={isModalAddItemOpen} 
           toggle={() => toggleAddItemModal(!isModalAddItemOpen)} 
-          onAddItem={() => console.log('yo')/*this.onAddItem*/} />
+          onAddItem={(base58check: String) => { 
+            setAddresses(oldAddresses => [...oldAddresses, base58check]);
+            setSelectedAddress(base58check);
+            toggleAddItemModal(!isModalAddItemOpen);
+          }}
+      />
     </>);
 }
 
+const NodeDetail: FunctionComponent<{base58check: string}> = (props) => {
+  const { loading, error, data }= useQuery(GET_ADDRESS, { variables: { base58check: props.base58check }});
+  if (loading) return <div>Loading...</div>;
+  if (error) { 
+    console.error(error);
+    return <Alert color="danger">Sorry, could not fetch address for given crypto hash.</Alert>;
+  }
+
+  const { address } = data;
+  const base58check = address.base58check;
+  const priorityTag =  address.tags.length >= 1 && address.tags.reduce((tagL: any, tagR: any) => tagL.priority < tagR.priority ? tagR: tagL).title;
+  const balanceReceived = address.incoming.reduce((sum: number, current: any) => sum + current.value, 0)
+  const balanceSent = address.outgoing.reduce((sum: number, current: any) => sum + current.value, 0)
+  const balanceBtc = balanceReceived - balanceSent;
+
+  return (
+    <Col className="bg-white" lg="2">
+      <Detail 
+        tag={priorityTag}
+        name={base58check} 
+        balance={balanceBtc}
+        sentCount={balanceSent} 
+        receivedCount={balanceReceived}
+      />
+    </Col>
+  )
+}
+
 export default withRouter(Space);
-
-/*
-export class Space extends React.Component<Props, State> {
-  state: Readonly<State> = {
-    isModalAddItemOpen: false
-  };
-
-  toggleModalAddItem() {
-    this.setState({
-      isModalAddItemOpen: !this.state.isModalAddItemOpen
-    });
-  }
-
-  onAddItem(base58check: string) {
-    console.log("Adding address", base58check);
-    
-    const { loading, error, data } = useQuery(GET_ADDRESS);
-
-    if (loading) return console.log('loading');
-    if (error) return console.log(`error ${error.message}`);
-
-    console.log(data.address);
-  }
-
-  render(): JSX.Element {
-    const { isModalAddItemOpen } = this.state;
-
-    const { loading, error, data } = useQuery(GET_ADDRESS);
-
-    if (loading) console.log('loading');
-    if (error) console.log(`error ${error.message}`);
-
-    console.log(data.address);
-
-    return (
-      <>
-        <Container fluid className="p-0 d-flex flex-column flex-grow-1">
-          <Row noGutters className="flex-grow-1 bg-light">
-            <Col className="bg-white shadow" lg="2">
-              <Sidebar searchPlaceholder="Search Cluster" btnText="Add Item" onBtnClick={() => this.toggleModalAddItem()} />
-            </Col>
-
-            <Col style={{overflow: 'hidden'}}>
-              {/*<div className="h-100" ref={this.graphElementDiv}>
-                <ApolloConsumer>
-                  {client => (
-                    <Graph graphData={graph} 
-                      height={mainElementHeight} width={mainElementWidth} 
-                      onSelectItem={(item: any) => this.loadAddress(item, client)}
-                      onExpandIncomingTransactions={(base58check: string) => this.onExpandIncomingTransactions(client, base58check)}
-                      onExpandOutgoingTransactions={(base58check: string) => this.onExpandOutgoingTransactions(client, base58check)}
-                      onDelete={(base58check: string) => this.onDelete(base58check)}
-                    />
-                  )}
-                </ApolloConsumer>
-              </div>*}
-            </Col>
-
-            {this.renderDetail(null)}
-          </Row>
-
-          {/*<ApolloConsumer>
-            {client => (<ModalAddItem isOpen={false} toggle={() => console.log('toggle')} onAddItem={(base58check: string) => console.log(base58check)} />)}
-          </ApolloConsumer>*}
-        </Container>
-
-        <ModalAddItem 
-            isOpen={isModalAddItemOpen} 
-            toggle={() => this.toggleModalAddItem()} 
-            onAddItem={this.onAddItem} />
-      </>
-    );
-  }
-
-  renderDetail(selectedItem?: any | null): JSX.Element | undefined {
-    if (!selectedItem || selectedItem == null) {
-      return;
-    }
-
-    const balanceSatoshi = selectedItem.receivedMeta.sum - selectedItem.sentMeta.sum;
-    const balanceBtc = balanceSatoshi / 100000000;
-
-    return (
-      <Col className="bg-white" lg="2">
-        <Detail name={selectedItem.base58check} 
-          balance={balanceBtc}
-          sentCount={selectedItem.sentMeta.count} receivedCount={selectedItem.receivedMeta.count}
-        />
-      </Col>
-    )
-  }
-}*/

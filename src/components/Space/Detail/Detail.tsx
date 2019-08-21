@@ -2,15 +2,18 @@ import * as React from 'react';
 
 interface Props {
   name: string;
+  tag?: string,
   balance?: number;
   receivedCount?: number;
   sentCount?: number;
 }
 
-export const Detail = ({ name, balance, receivedCount, sentCount }: Props) => (
+const SATOSHI_BTC_RATIO = 100000000;
+
+export const Detail = ({ name, tag, balance, receivedCount, sentCount }: Props) => (
   <>
     <DetailEntry header="INFO">
-      <div className="mt-3 font-weight-bold">Chaincom</div>
+      <div className="mt-3 font-weight-bold">{tag || "Unknown"}</div>
 
       <div className="mt-4 small text-truncate" title={name}>{name}</div>
     </DetailEntry>
@@ -26,12 +29,12 @@ export const Detail = ({ name, balance, receivedCount, sentCount }: Props) => (
       <div className="mt-1">1.233242</div>
 
       <small className="mt-4 d-block text-muted">CURRENT BALANCE (BTC)</small>
-      <div className="mt-1">{balance || 0}</div>
+      <div className="mt-1">{(balance || 0) / SATOSHI_BTC_RATIO}</div>
 
       <small className="mt-4 d-block text-muted">COUNT</small>
       <div className="mt-1">
-        <span className="mr-2 mr-lg-5">{receivedCount || 0} received</span>
-        <span>{sentCount || 0} sent</span>
+        <span className="mr-2 mr-lg-5">{(receivedCount || 0) / SATOSHI_BTC_RATIO} received</span>
+        <span>{(sentCount || 0) / SATOSHI_BTC_RATIO} sent</span>
       </div>
     </DetailEntry>
 
