@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Badge } from 'reactstrap';
 
 interface Props {
   name: string;
@@ -11,6 +12,8 @@ interface Props {
 const SATOSHI_BTC_RATIO = 100000000;
 const convertSatoshiToBtc = (satoshi: number): number => satoshi / SATOSHI_BTC_RATIO;
 
+const Todo = () => <Badge color="light" pill>TODO</Badge>
+
 export const Detail: React.FunctionComponent<Props> = ({ name, tag = "Unknown", balance = 0, receivedCount = 0, sentCount = 0 }) => (
   <>
     <DetailEntry header="INFO">
@@ -20,14 +23,14 @@ export const Detail: React.FunctionComponent<Props> = ({ name, tag = "Unknown", 
     </DetailEntry>
     
     <DetailEntry header="FIRST USED">
-      <div className="mt-1">9. May 2018 16:14:42</div>
+      <div className="mt-1"><Todo /> 9. May 2018 16:14:42</div>
 
       <small className="mt-4 d-block text-muted">LAST USED</small>
-      <div className="mt-1">9. May 2018 17:14:42</div>
+      <div className="mt-1"><Todo /> 9. May 2018 17:14:42</div>
     </DetailEntry>
 
     <DetailEntry header="TOTAL TRANSFERRED (BTC)">
-      <div className="mt-1">1.233242</div>
+      <div className="mt-1"><Todo /> 1.233242</div>
 
       <small className="mt-4 d-block text-muted">CURRENT BALANCE (BTC)</small>
       <div className="mt-1">{convertSatoshiToBtc(balance)}</div>

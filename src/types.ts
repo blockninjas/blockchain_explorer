@@ -31,9 +31,35 @@ const GET_ADDRESS = gql`
       base58check
       incoming {
         value
+        transaction {
+          hash
+          inputs {
+            address {
+              base58check
+            }
+          }
+          outputs {
+            address {
+              base58check
+            }
+          }
+        }
       }
       outgoing {
         value
+        transaction {
+          hash
+          inputs {
+            address {
+              base58check
+            }
+          }
+          outputs {
+            address {
+              base58check
+            }
+          }
+        }
       }
       tags {
         title

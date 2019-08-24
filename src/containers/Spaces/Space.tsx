@@ -6,6 +6,7 @@ import { Sidebar, Detail } from '../../components/Space';
 import { ModalAddItem } from '../../components/Space/Modals';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import Graph from './Graph';
+import { Loading } from '../../components/Loading';
 
 type RouteProps = {
   id: string
@@ -23,6 +24,38 @@ const GET_SPACE = gql`
         spaceId
         address @client {
           base58check
+          incoming {
+            value
+            transaction {
+              hash
+              inputs {
+                address {
+                  base58check
+                }
+              }
+              outputs {
+                address {
+                  base58check
+                }
+              }
+            }
+          }
+          outgoing {
+            value
+            transaction {
+              hash
+              inputs {
+                address {
+                  base58check
+                }
+              }
+              outputs {
+                address {
+                  base58check
+                }
+              }
+            }
+          }
           tags {
             title
             category
@@ -43,6 +76,9 @@ const GET_ADDRESS = gql`
       }
       outgoing {
         value
+        transaction {
+          hash
+        }
       }
       tags {
         title
@@ -70,19 +106,36 @@ const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) =>
   const currentSpaceId = match.params.id;
   const [isModalAddItemOpen, toggleAddItemModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState();
-  const [addressesX, setAddresses] = useState(Array<string>());
   const [addNodeAddressToSpace] = useMutation(ADD_NODE_ADDRESS_TO_SPACE);
 
-  const { loading, error, data } = useQuery(GET_SPACE, { variables: { spaceId: currentSpaceId }});
-  if (loading) return <div>Loading...</div>;
+  const { loading, error, data } = useQuery<TypedQuerySpace>(GET_SPACE, { variables: { spaceId: currentSpaceId }});
+  if (loading) return <LoadingSpace />;
   if (error) return <div>Error: ${error}</div>;
 
-
-  const space = data.space;
+  const space = data!.space;
 
   console.log("Current Space", space);
 
-  const addresses = space.nodeAddresses.map((nodeAdd: any) => nodeAdd.base58check);
+  const addresses = space!.nodeAddresses.map((nodeAdd) => nodeAdd.base58check);
+  
+  const edges = [];
+  
+  for (let nodeAddress of space.nodeAddresses) {
+    const source = nodeAddress.base58check;
+    
+    const inputs = nodeAddress.address.incoming.map((tx) => tx.transaction.inputs).flat();
+    for (let input of inputs) {
+      const target = input.address.base58check;
+      edges.push({ source: source, target: target });
+    }
+
+    const outputs = nodeAddress.address.outgoing.map((tx) => tx.transaction.outputs).flat();
+    for (let output of outputs) {
+      const target = output.address.base58check;
+      edges.push({ source: source, target: target });
+    }
+  }
+
   const tags = space.nodeAddresses.map((nodeAdd: any) => nodeAdd.address.tags).flat();
 
   return (
@@ -99,7 +152,11 @@ const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) =>
           </Col>
 
           <Col style={{overflow: 'hidden'}}>
-            <Graph addresses={addresses} onSelectAddress={setSelectedAddress} />
+            <Graph 
+              addresses={addresses} 
+              edges={edges} 
+              onSelectAddress={setSelectedAddress} 
+            />
           </Col>
 
           {selectedAddress && <NodeDetail base58check={selectedAddress} />}
@@ -152,4 +209,49 @@ const NodeDetail: FunctionComponent<{base58check: string}> = (props) => {
   )
 }
 
+const LoadingSpace = () => <div className="w-100 h-100 d-flex justify-content-center align-items-center"><Loading /></div>;
+
 export default withRouter(Space);
+
+type TypedQuerySpace = {
+  space: {
+    nodeAddresses: Array<TypedQueryNodeAddress>;
+  };
+};
+
+type TypedQueryNodeAddress = {
+  base58check: string;
+  address: TypedQueryAddress;
+  tags: Array<TypedQueryTags>;
+};
+
+type TypedQueryAddress = {
+  base58check: string;
+  incoming: Array<TypedQueryInOut>;
+  outgoing: Array<TypedQueryInOut>;
+}
+
+type TypedQueryInOut = {
+  value: number;
+  transaction: TypedQueryTransaction;
+};
+
+type TypedQueryTransaction = {
+  hash: string;
+  inputs: Array<{
+    address: {
+      base58check: string;
+    }
+  }>
+  outputs: Array<{
+    address: {
+      base58check: string;
+    }
+  }>
+}
+
+type TypedQueryTags = {
+  title: string;
+  category: string;
+  priority: number;
+};

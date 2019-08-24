@@ -88,8 +88,7 @@ const client = new ApolloClient({
         cache.writeData({ id, data });
         return null;
       },
-      addNodeAddressToSpace: (_root, { base58check, spaceId }, { cache, getCacheKey }) => {
-        // TODO: may be removed in the near future
+      addNodeAddressToSpace: (_root, { base58check, spaceId }, { _cache, _getCacheKey }) => {
         const allNodeAddresses = client.readQuery({query: GET_NODE_ADDRESSES});
         
         const newAddress: Address = {
@@ -131,18 +130,18 @@ const initialCacheData = {
         __typename: TYPE_NAMES.NODE_ADDRESS,
         id: uuid.v4(),
         spaceId: "1",
-        base58check: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
-      },
+        base58check: "1AGqp9CLEhzsB5eiMyNFHvEgwXeH1ELQVS"
+      }
     ]
   }
 }
 
 const setupAndRender = async () => {
   // await before instantiating ApolloClient, else queries might run before the cache is persisted
-  await persistCache({
+  /*await persistCache({
     cache: cache,
     storage: window.localStorage as PersistentStorage<PersistedData<NormalizedCacheObject>>
-  });
+  });*/
   ReactDOM.render(<ApolloProvider client={client}><Router /></ApolloProvider>, document.getElementById('root'));
 }
 
