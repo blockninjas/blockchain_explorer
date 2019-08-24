@@ -1,6 +1,10 @@
 # Blockchain Explorer
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+
 The `blockchain_explorer` provides a web-based user-interface for querying blockchain data exposed with our [blockchain_api](https://github.com/blockninjas/blockchain_api).
+
+![System Architecture](./system-architecture.png)
 
 # Notes on ReactJS
 
