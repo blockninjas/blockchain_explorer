@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Container, Row, Col, Alert } from 'reactstrap';
 import gql from 'graphql-tag';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { Sidebar, Detail } from '../../components/Space';
 import { ModalAddItem } from '../../components/Space/Modals';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
@@ -21,6 +21,14 @@ const GET_SPACE = gql`
       nodeAddresses @client {
         base58check
         spaceId
+        address @client {
+          base58check
+          tags {
+            title
+            category
+            priority
+          }
+        }
       }
     }
   }
@@ -52,17 +60,33 @@ const GET_ADDRESS = gql`
   }
 `;
 
+type AddSpaceMutation = {
+  addSpace: {
+    id: number,
+    name: string
+  }
+}
+
+const ADD_NODE_ADDRESS_TO_SPACE= gql`
+  mutation addNodeAddressToSpace($name: String!, $spaceId: Integer!) {
+    addNodeAddressToSpace(base58check: $base58check, spaceId: $spaceId) @client
+  }
+`;
+
 const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) => {
   const currentSpaceId = match.params.id;
   const [isModalAddItemOpen, toggleAddItemModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState();
-  const [addresses, setAddresses] = useState(Array<String>());
+  const [addressesX, setAddresses] = useState(Array<String>());
+  const [addNodeAddressToSpace] = useMutation(ADD_NODE_ADDRESS_TO_SPACE);
 
   const { loading, error, data } = useQuery(GET_SPACE, { variables: { spaceId: currentSpaceId }});
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: ${error}</div>;
 
   console.log("Current Space", data.space);
+
+  const addresses = data.space.nodeAddresses.map((nodeAdd: any) => nodeAdd.base58check);
 
   return (
     <>
@@ -84,8 +108,14 @@ const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) =>
           isOpen={isModalAddItemOpen} 
           toggle={() => toggleAddItemModal(!isModalAddItemOpen)} 
           onAddItem={(base58check: String) => { 
-            setAddresses(oldAddresses => [...oldAddresses, base58check]);
-            setSelectedAddress(base58check);
+            addNodeAddressToSpace({ 
+              variables: { base58check: base58check, spaceId: match.params.id },
+              refetchQueries: ["getSpace"]
+            });
+            /*
+            setAddresses(oldAddresses => [...oldAddresses, base58check]);*/
+            //setSelectedAddress(base58check);
+
             toggleAddItemModal(!isModalAddItemOpen);
           }}
       />

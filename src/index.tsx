@@ -3,15 +3,16 @@ import ReactDOM from 'react-dom';
 import * as serviceWorker from './serviceWorker';
 import { ApolloProvider } from '@apollo/react-hooks';
 import ApolloClient, { InMemoryCache, gql, NormalizedCacheObject } from 'apollo-boost';
+import uuid from 'uuid';
 import { persistCache } from 'apollo-cache-persist';
 import { PersistentStorage, PersistedData } from 'apollo-cache-persist/types';
 import './custom.scss';
 import { Router } from './Router';
-import { QUERY_SPACES, GET_NODE_ADDRESSES } from './types';
+import { QUERY_SPACES, GET_NODE_ADDRESSES, GET_ADDRESS, TYPE_NAMES } from './types';
 
 type Address = {
   __typename: string,
-  //id: string,
+  id: string,
   spaceId: number,
   base58check: string
 }
@@ -32,8 +33,14 @@ const client = new ApolloClient({
     Space: {
       nodeAddresses: (space, _args, { cache }) => {
         const { nodeAddresses } = cache.readQuery({ query: GET_NODE_ADDRESSES });
-        return nodeAddresses;
+        return nodeAddresses.filter((nodeAddress: Address) => nodeAddress.spaceId === space.id);
       }
+    },
+    NodeAddress: {
+      address: async (parent: { base58check: string, spaceId: number }, _variables, _context) => {
+        const { data }: any = await client.query({ query: GET_ADDRESS, variables: { base58check: parent.base58check }});
+        return data.address;
+      },
     },
     Query: {
       space: (_parent, variables, { cache, getCacheKey }) => {
@@ -55,11 +62,11 @@ const client = new ApolloClient({
         const allSpaces = client.readQuery({query: QUERY_SPACES});
 
         const newSpace: Space = {
-          id: allSpaces.spaces.length + 1,
+          id: uuid.v4(),
           ...variables,
           createdAt: "A few seconds ago",
           isBookmark: false,
-          __typename: "Space",
+          __typename: TYPE_NAMES.SPACE,
         };
 
         client.writeQuery({query: QUERY_SPACES, data: { spaces: [...allSpaces.spaces, newSpace] }});
@@ -67,7 +74,7 @@ const client = new ApolloClient({
         return newSpace;
       },
       toggleSpaceBookmark: (_root, variables, { cache, getCacheKey }) => {
-        const id = getCacheKey({ __typename: 'Space', id: variables.id })
+        const id = getCacheKey({ __typename: TYPE_NAMES.SPACE, id: variables.id })
         const fragment = gql`
           fragment bookmarkSpace on Space {
             isBookmark
@@ -78,15 +85,15 @@ const client = new ApolloClient({
         cache.writeData({ id, data });
         return null;
       },
-      addAddressToSpace: (_root, { address, spaceId }, { cache, getCacheKey }) => {
+      addNodeAddressToSpace: (_root, { base58check, spaceId }, { cache, getCacheKey }) => {
         // TODO: may be removed in the near future
         const allNodeAddresses = client.readQuery({query: GET_NODE_ADDRESSES});
         
         const newAddress: Address = {
-          base58check: address,
+          base58check: base58check,
           spaceId: spaceId,
-          //id: variables.address,
-          __typename: "NodeAddress"
+          id: uuid.v4(),
+          __typename: TYPE_NAMES.NODE_ADDRESS
         }
 
         client.writeQuery({query: GET_NODE_ADDRESSES, data: { nodeAddresses: [...allNodeAddresses.nodeAddresses, newAddress] }});
@@ -101,26 +108,26 @@ const initialCacheData = {
   data: {
     spaces: [
       {
-        __typename: 'Space', 
-        id: 1, 
+        __typename: TYPE_NAMES.SPACE, 
+        id: "1", 
         name: 'Akt A4144', 
         createdAt: 'Today, 12:30', 
         isBookmark: true
       },
-      { __typename: 'Space', id: 2, name: 'Akt AB132', createdAt: 'Today, 11:10', isBookmark: true },
-      { __typename: 'Space', id: 3, name: 'Akt EX333', createdAt: 'Yesterday, 14:23', isBookmark: false },
+      { __typename: TYPE_NAMES.SPACE, id: "2", name: 'Akt AB132', createdAt: 'Today, 11:10', isBookmark: true },
+      { __typename: TYPE_NAMES.SPACE, id: "3", name: 'Akt EX333', createdAt: 'Yesterday, 14:23', isBookmark: false },
     ],
     nodeAddresses: [
       {
-        __typename: 'NodeAddress',
-        id: 'A1',
-        spaceId: 1,
-        base58check: "1DcJGpZvUyqhNCbxKADXPUTznn8Np55vwb"
+        __typename: TYPE_NAMES.NODE_ADDRESS,
+        id: uuid.v4(),
+        spaceId: "1",
+        base58check: "18fu4QYhAtNt5yJvB7BSEo5twmrm6QUiTx"
       },
       {
-        __typename: 'NodeAddress',
-        id: 'A2',
-        spaceId: 1,
+        __typename: TYPE_NAMES.NODE_ADDRESS,
+        id: uuid.v4(),
+        spaceId: "1",
         base58check: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
       },
     ]
