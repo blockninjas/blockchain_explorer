@@ -73,7 +73,7 @@ const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) =>
           </Col>
 
           <Col style={{overflow: 'hidden'}}>
-            <Graph addresses={addresses} />
+            <Graph addresses={addresses} onSelectAddress={setSelectedAddress} />
           </Col>
 
           {selectedAddress && <NodeDetail base58check={selectedAddress} />}

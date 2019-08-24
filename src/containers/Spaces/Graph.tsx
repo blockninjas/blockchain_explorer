@@ -10,9 +10,10 @@ type Address = {
   base58check: string
 }
 
-const Graph: FunctionComponent<{addresses: Array<String>}> = ({addresses}) => {
+const Graph: FunctionComponent<{addresses: Array<String>, onSelectAddress?: ((address: String) => void)}> = ({addresses, onSelectAddress}) => {
   // TODO load addresses from GraphQL endpoint
   // console.log(addresses);
+  
   const height = "100%";
   const width = "100%";
   
@@ -36,7 +37,17 @@ const Graph: FunctionComponent<{addresses: Array<String>}> = ({addresses}) => {
   }
 
   const onEvents: EventMap = {
-    'click': (event) => console.log(event)
+    'click': (event) => {
+      if (event.dataType === "node") {
+        console.log('Graph node selected', event.data);
+        
+        const selectedNode: { id: String, category: String, name: String } = event.data;
+        const address = selectedNode.name;
+        if (onSelectAddress) {
+          onSelectAddress(address);
+        }
+      }
+    }
   }
   
   return (
