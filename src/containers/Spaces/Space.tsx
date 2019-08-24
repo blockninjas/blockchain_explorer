@@ -27,6 +27,9 @@ const GET_SPACE = gql`
           incoming {
             value
             transaction {
+              block {
+                creationTime
+              }
               hash
               inputs {
                 address {
@@ -43,6 +46,9 @@ const GET_SPACE = gql`
           outgoing {
             value
             transaction {
+              block {
+                creationTime
+              }
               hash
               inputs {
                 address {
@@ -123,12 +129,6 @@ const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) =>
   for (let nodeAddress of space.nodeAddresses) {
     const source = nodeAddress.base58check;
     
-    const inputs = nodeAddress.address.incoming.map((tx) => tx.transaction.inputs).flat();
-    for (let input of inputs) {
-      const target = input.address.base58check;
-      edges.push({ source: source, target: target });
-    }
-
     const outputs = nodeAddress.address.outgoing.map((tx) => tx.transaction.outputs).flat();
     for (let output of outputs) {
       const target = output.address.base58check;

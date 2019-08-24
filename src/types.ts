@@ -32,6 +32,9 @@ const GET_ADDRESS = gql`
       incoming {
         value
         transaction {
+          block {
+            creationTime
+          }
           hash
           inputs {
             address {
@@ -48,6 +51,9 @@ const GET_ADDRESS = gql`
       outgoing {
         value
         transaction {
+          block {
+            creationTime
+          }
           hash
           inputs {
             address {

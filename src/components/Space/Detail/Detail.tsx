@@ -29,17 +29,14 @@ export const Detail: React.FunctionComponent<Props> = ({ name, tag = "Unknown", 
       <div className="mt-1"><Todo /> 9. May 2018 17:14:42</div>
     </DetailEntry>
 
-    <DetailEntry header="TOTAL TRANSFERRED (BTC)">
-      <div className="mt-1"><Todo /> 1.233242</div>
+    <DetailEntry header="CURRENT BALANCE">
+      <div className="mt-1">{convertSatoshiToBtc(balance)} BTC</div>
 
-      <small className="mt-4 d-block text-muted">CURRENT BALANCE (BTC)</small>
-      <div className="mt-1">{convertSatoshiToBtc(balance)}</div>
+      <small className="mt-4 d-block text-muted">TOTAL RECEIVED</small>
+      <div className="mt-1">{convertSatoshiToBtc(receivedCount)} BTC</div>
 
-      <small className="mt-4 d-block text-muted">COUNT</small>
-      <div className="mt-1">
-        <span className="mr-2 mr-lg-5">{convertSatoshiToBtc(receivedCount)} received</span>
-        <span>{convertSatoshiToBtc(sentCount)} sent</span>
-      </div>
+      <small className="mt-4 d-block text-muted">TOTAL SENT</small>
+      <div className="mt-1">{convertSatoshiToBtc(sentCount)} BTC</div>
     </DetailEntry>
 
     {
