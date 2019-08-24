@@ -12,26 +12,21 @@ export interface Props {
   searchPlaceholder: string;
   btnText: string;
   onBtnClick?: (e: React.FormEvent<HTMLButtonElement>) => void;
+  items: Array<string>
 }
 
-export const Sidebar = ({ searchPlaceholder, btnText, onBtnClick }: Props) => (
+export const Sidebar = ({ searchPlaceholder, btnText, onBtnClick, items }: Props) => (
   <div className="h-100 d-flex flex-column">
     <Search placeholder={searchPlaceholder} />
 
     <div className="px-md-2 flex-grow-1">
       <ul className="list-group list-group-flush">
-        <li className="list-group-item border-0">
-          <FontAwesomeIcon icon={faFolderIcon} fixedWidth className="mr-2" />
-          Coinbase
-        </li>
-        <li className="list-group-item border-0">
-          <FontAwesomeIcon icon={faFolderIcon} fixedWidth className="mr-2" />
-          BitXchange
-        </li>
-        <li className="list-group-item border-0">
-          <FontAwesomeIcon icon={faFolderIcon} fixedWidth className="mr-2" />
-          CoinTech
-        </li>
+        {items.map((item) => 
+          <li className="list-group-item border-0" key={item}>
+            <FontAwesomeIcon icon={faFolderIcon} fixedWidth className="mr-2" />
+            {item}
+          </li>
+        )}
       </ul>
     </div>
 

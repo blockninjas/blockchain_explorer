@@ -60,13 +60,6 @@ const GET_ADDRESS = gql`
   }
 `;
 
-type AddSpaceMutation = {
-  addSpace: {
-    id: number,
-    name: string
-  }
-}
-
 const ADD_NODE_ADDRESS_TO_SPACE= gql`
   mutation addNodeAddressToSpace($name: String!, $spaceId: Integer!) {
     addNodeAddressToSpace(base58check: $base58check, spaceId: $spaceId) @client
@@ -77,23 +70,32 @@ const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) =>
   const currentSpaceId = match.params.id;
   const [isModalAddItemOpen, toggleAddItemModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState();
-  const [addressesX, setAddresses] = useState(Array<String>());
+  const [addressesX, setAddresses] = useState(Array<string>());
   const [addNodeAddressToSpace] = useMutation(ADD_NODE_ADDRESS_TO_SPACE);
 
   const { loading, error, data } = useQuery(GET_SPACE, { variables: { spaceId: currentSpaceId }});
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: ${error}</div>;
 
-  console.log("Current Space", data.space);
 
-  const addresses = data.space.nodeAddresses.map((nodeAdd: any) => nodeAdd.base58check);
+  const space = data.space;
+
+  console.log("Current Space", space);
+
+  const addresses = space.nodeAddresses.map((nodeAdd: any) => nodeAdd.base58check);
+  const tags = space.nodeAddresses.map((nodeAdd: any) => nodeAdd.address.tags).flat();
 
   return (
     <>
       <Container fluid className="p-0 d-flex flex-column flex-grow-1">
         <Row noGutters className="flex-grow-1 bg-light">
           <Col className="bg-white shadow" lg="2">
-            <Sidebar searchPlaceholder="Search Cluster" btnText="Add Item" onBtnClick={() => toggleAddItemModal(!isModalAddItemOpen)} />
+            <Sidebar 
+              searchPlaceholder="Search Cluster" 
+              btnText="Add Item" 
+              onBtnClick={() => toggleAddItemModal(!isModalAddItemOpen)}
+              items={tags.map((tag: { title: string }) => tag.title)}
+            />
           </Col>
 
           <Col style={{overflow: 'hidden'}}>
@@ -107,7 +109,7 @@ const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) =>
       <ModalAddItem 
           isOpen={isModalAddItemOpen} 
           toggle={() => toggleAddItemModal(!isModalAddItemOpen)} 
-          onAddItem={(base58check: String) => { 
+          onAddItem={(base58check: string) => { 
             addNodeAddressToSpace({ 
               variables: { base58check: base58check, spaceId: match.params.id },
               refetchQueries: ["getSpace"]
