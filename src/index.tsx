@@ -37,6 +37,9 @@ const client = new ApolloClient({
       }
     },
     NodeAddress: {
+      /**
+       * Resolver to fetch remote Address for given local-only NodeAddress
+       */
       address: async (parent: { base58check: string, spaceId: number }, _variables, _context) => {
         const { data }: any = await client.query({ query: GET_ADDRESS, variables: { base58check: parent.base58check }});
         return data.address;
