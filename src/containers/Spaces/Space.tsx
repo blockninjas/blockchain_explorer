@@ -222,13 +222,13 @@ type TypedQuerySpace = {
 type TypedQueryNodeAddress = {
   base58check: string;
   address: TypedQueryAddress;
-  tags: Array<TypedQueryTags>;
 };
 
 type TypedQueryAddress = {
   base58check: string;
   incoming: Array<TypedQueryInOut>;
   outgoing: Array<TypedQueryInOut>;
+  tags: Array<TypedQueryTags>;
 }
 
 type TypedQueryInOut = {
