@@ -225,11 +225,22 @@ const NodeDetail: FunctionComponent<{base58check: string}> = (props) => {
   const balanceSent = address.outgoing.reduce((sum: number, current: any) => sum + current.value, 0)
   const balanceBtc = balanceReceived - balanceSent;
 
+  const allUsedDateTimesForAddress = address.incoming
+    .map((incoming) => new Date(incoming.transaction.block.creationTime))
+    .concat(address.outgoing
+      .map((outgoing) => new Date(outgoing.transaction.block.creationTime))
+    );
+
+  const firstUsed = allUsedDateTimesForAddress.reduce((min: Date, current: Date) => current < min ? current : min);
+  const lastUsed = allUsedDateTimesForAddress.reduce((min: Date, current: Date) => current > min ? current : min);
+
   return (
     <Col className="bg-white" lg="2">
       <Detail 
         tag={priorityTag}
         name={base58check} 
+        firstUsed={firstUsed}
+        lastUsed={lastUsed}
         balance={balanceBtc}
         sentCount={balanceSent} 
         receivedCount={balanceReceived}
