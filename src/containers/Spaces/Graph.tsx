@@ -80,11 +80,11 @@ const Graph: FunctionComponent<Props> = ({ addresses, onSelectAddress, edges }) 
           lineStyle: {
             color: 'source',
             curveness: 0.3,
-            width: 4,
+            width: 3,
           },
           emphasis: {
             lineStyle: {
-              width: 20,
+              width: 5,
             }
           },
           focusNodeAdjacency: true,
