@@ -145,10 +145,10 @@ const initialCacheData = {
 
 const setupAndRender = async () => {
   // await before instantiating ApolloClient, else queries might run before the cache is persisted
-  /*await persistCache({
+  await persistCache({
     cache: cache,
     storage: window.localStorage as PersistentStorage<PersistedData<NormalizedCacheObject>>
-  });*/
+  });
   ReactDOM.render(<ApolloProvider client={client}><Router /></ApolloProvider>, document.getElementById('root'));
 }
 
