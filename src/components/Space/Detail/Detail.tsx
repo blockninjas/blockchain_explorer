@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Badge } from 'reactstrap';
 
 interface Props {
   name: string;
