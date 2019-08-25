@@ -137,21 +137,31 @@ const ADD_NODE_ADDRESS_TO_SPACE= gql`
   }
 `;
 
+const REMOVE_NODE_ADDRESS_FROM_SPACE= gql`
+  mutation removeNodeAddressFromSpace($base58check: String!, $spaceId: Integer!) {
+    removeNodeAddressFromSpace(base58check: $base58check, spaceId: $spaceId) @client
+  }
+`;
+
 const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) => {
   const currentSpaceId = match.params.id;
   const [isModalAddItemOpen, toggleAddItemModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState();
   const [addNodeAddressToSpace] = useMutation(ADD_NODE_ADDRESS_TO_SPACE);
+  const [removeNodeAddressFromSpace] = useMutation(REMOVE_NODE_ADDRESS_FROM_SPACE);
 
   const { loading, error, data } = useQuery<TypedQuerySpace>(GET_SPACE, { variables: { spaceId: currentSpaceId }});
   if (loading) return <LoadingSpace />;
-  if (error) return <div>Error: ${error}</div>;
+  if (error) {
+    console.error(error);
+    return <div>Error: ${error}</div>;
+  }
 
   const space = data!.space;
 
   console.log("Current Space", space);
 
-  const addresses = space!.nodeAddresses.map((nodeAdd) => nodeAdd.base58check);
+  const nodeAddresses = space!.nodeAddresses.map((nodeAddress) => nodeAddress);
   
   const edges = [];
   
@@ -165,7 +175,7 @@ const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) =>
     }
   }
 
-  const tags = space.nodeAddresses.map((nodeAdd: any) => nodeAdd.address.tags).flat();
+  const tags = nodeAddresses.map((nodeAddress) => nodeAddress.address.tags).flat();
 
   return (
     <>
@@ -176,15 +186,22 @@ const Space: FunctionComponent<RouteComponentProps<RouteProps>> = ({ match }) =>
               searchPlaceholder="Search Cluster" 
               btnText="Add Item" 
               onBtnClick={() => toggleAddItemModal(!isModalAddItemOpen)}
-              items={tags.map((tag: { title: string }) => tag.title)}
+              items={tags.map((tag) => tag.title)}
             />
           </Col>
 
           <Col style={{overflow: 'hidden'}}>
             <Graph 
-              addresses={addresses} 
+              addresses={nodeAddresses.map((nodeAddress) => nodeAddress.base58check)} 
               edges={edges} 
+              selectedAddress={selectedAddress}
               onSelectAddress={setSelectedAddress} 
+              onDeleteAddress={(base58check: string) => {
+                removeNodeAddressFromSpace({
+                  variables: { base58check: base58check, spaceId: match.params.id },
+                  refetchQueries: ["getSpace"]
+                });
+              }}
             />
           </Col>
 

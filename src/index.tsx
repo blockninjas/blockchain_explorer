@@ -89,7 +89,7 @@ const client = new ApolloClient({
         return null;
       },
       addNodeAddressToSpace: (_root, { base58check, spaceId }, { _cache, _getCacheKey }) => {
-        const allNodeAddresses = client.readQuery({query: GET_NODE_ADDRESSES});
+        const allNodeAddresses = client.readQuery({ query: GET_NODE_ADDRESSES });
         
         const newAddress: Address = {
           base58check: base58check,
@@ -98,9 +98,16 @@ const client = new ApolloClient({
           __typename: TYPE_NAMES.NODE_ADDRESS
         }
 
-        client.writeQuery({query: GET_NODE_ADDRESSES, data: { nodeAddresses: [...allNodeAddresses.nodeAddresses, newAddress] }});
+        client.writeQuery({ query: GET_NODE_ADDRESSES, data: { nodeAddresses: [...allNodeAddresses.nodeAddresses, newAddress] }});
 
         return newAddress;
+      },
+      removeNodeAddressFromSpace: (_root, { base58check, spaceId }, { _cache, _getCacheKey }) => {
+        const allNodeAddresses = client.readQuery({ query: GET_NODE_ADDRESSES });
+
+        const filteredAddresses = allNodeAddresses.nodeAddresses.filter((nodeAddress: Address) => !(nodeAddress.spaceId === spaceId && nodeAddress.base58check === base58check));
+        
+        client.writeQuery({ query: GET_NODE_ADDRESSES, data: { nodeAddresses: filteredAddresses }});
       }
     },
   }
