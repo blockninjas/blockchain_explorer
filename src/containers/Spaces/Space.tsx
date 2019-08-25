@@ -232,7 +232,7 @@ const NodeDetail: FunctionComponent<{base58check: string}> = (props) => {
     );
 
   const firstUsed = allUsedDateTimesForAddress.reduce((min: Date, current: Date) => current < min ? current : min);
-  const lastUsed = allUsedDateTimesForAddress.reduce((min: Date, current: Date) => current > min ? current : min);
+  const lastUsed = allUsedDateTimesForAddress.reduce((max: Date, current: Date) => current > max ? current : max);
 
   return (
     <Col className="bg-white" lg="2">
