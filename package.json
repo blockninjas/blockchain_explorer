@@ -23,7 +23,7 @@
     "echarts-for-react": "^2.0.15-beta.0",
     "formik": "^1.5.8",
     "graphql": "^14.4.2",
-    "node-sass": "^4.12.0",
+    "node-sass": "^7.0.0",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-router-dom": "^5.0.1",
